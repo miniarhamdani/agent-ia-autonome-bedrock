@@ -21,6 +21,11 @@ AWS_REGION = os.getenv("AWS_REGION", "eu-west-1")
 MODEL_CLAUDE = os.getenv("BEDROCK_MODEL_CLAUDE", "anthropic.claude-3-5-sonnet-20241022-v2:0")
 MODEL_TITAN = os.getenv("BEDROCK_MODEL_TITAN", "amazon.titan-text-express-v1")
 
+# Si des clés d'accès directes sont présentes dans .env, boto3/langchain les
+# détecteront automatiquement via les variables d'environnement standard
+# AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_SESSION_TOKEN.
+# Sinon, c'est le profil AWS_PROFILE (SSO) qui sera utilisé.
+
 
 def test_boto3_client() -> bool:
     """Vérifie que le client bas niveau boto3 peut lister les modèles Bedrock."""
@@ -38,21 +43,26 @@ def test_boto3_client() -> bool:
 
 
 def _invoke_model(model_id: str, label: str) -> bool:
+    """Invoque un modèle via l'API Converse de Bedrock (boto3 direct, indépendant
+    de la version de langchain-aws — évite les soucis de compatibilité avec les
+    modèles récents comme Nova ou les Claude nécessitant un inference profile)."""
     print(f"→ Test : appel du modèle {label} ({model_id})...")
     try:
-        from langchain_aws import ChatBedrock
-
-        llm = ChatBedrock(model_id=model_id, region_name=AWS_REGION)
+        client = boto3.client("bedrock-runtime", region_name=AWS_REGION)
         start = time.time()
-        response = llm.invoke("Réponds en une phrase : que fais-tu ?")
+        response = client.converse(
+            modelId=model_id,
+            messages=[{"role": "user", "content": [{"text": "Réponds en une phrase : que fais-tu ?"}]}],
+        )
         elapsed = time.time() - start
 
+        text = response["output"]["message"]["content"][0]["text"]
         print(f"   OK — réponse reçue en {elapsed:.2f}s")
-        print(f"   Réponse : {response.content[:200]}")
+        print(f"   Réponse : {text[:200]}")
         return True
     except Exception as e:
         print(f"   ÉCHEC — {type(e).__name__}: {e}")
-        print("   Vérifiez : le modèle est bien activé dans la console Bedrock, et le rôle IAM a bedrock:InvokeModel.")
+        print("   Vérifiez : le modèle est bien activé, l'ID est correct (inference profile si besoin), et le rôle IAM a bedrock:InvokeModel.")
         return False
 
 
