@@ -120,8 +120,8 @@ if __name__ == "__main__":
 
     # Cas d'usage 5 (MHD-11) : requête combinant RAG + API externe
     requete = (
-        "Résume notre procédure de déploiement cloud interne, et dis-moi "
-        "s'il fait beau pour la démo client de demain à Tunis."
+         "Avant ma réunion à Tunis, donne-moi la météo actuelle dans cette ville "
+    "et rappelle-moi ensuite les principales règles de sécurité IAM de Smartovate."
     )
 
     print("=" * 60)
