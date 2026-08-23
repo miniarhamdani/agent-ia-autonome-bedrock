@@ -19,7 +19,7 @@ load_dotenv()
 
 AWS_REGION = os.getenv("AWS_REGION", "eu-west-1")
 MODEL_CLAUDE = os.getenv("BEDROCK_MODEL_CLAUDE", "anthropic.claude-3-5-sonnet-20241022-v2:0")
-MODEL_TITAN = os.getenv("BEDROCK_MODEL_TITAN", "amazon.titan-text-express-v1")
+MODEL_TITAN = os.getenv("BEDROCK_MODEL_TITAN", "amazon.nova-lite-v1:0")
 
 # Si des clés d'accès directes sont présentes dans .env, boto3/langchain les
 # détecteront automatiquement via les variables d'environnement standard
